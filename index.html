@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Selecionar Chats</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .chat-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .chat-group img {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+
+    input[type="url"] {
+      flex: 1;
+      padding: 5px;
+    }
+
+    #links-container {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Quantos chats você quer abrir?</h2>
+  <input type="number" id="chat-count" min="1" max="10" />
+  <button onclick="gerarCampos()">Avançar</button>
+
+  <form id="form">
+    <div id="links-container"></div>
+    <button type="submit" style="display:none;" id="abrir">Abrir Chats</button>
+  </form>
+
+  <script>
+    const icones = {
+      twitch: './iccones/twitch.png',
+      youtube: './iccones/youtube.png',
+      loco: './iccones/loco.png',
+      kick: './iccones/kick.png',
+      desconhecida: './iccones/interrogacao.png'
+    };
+
+    function detectarPlataforma(link) {
+      if (/twitch\.tv/.test(link)) return 'twitch';
+      if (/youtube\.com/.test(link) || /youtu\.be/.test(link)) return 'youtube';
+      if (/kick\.com/.test(link)) return 'kick';
+      if (/loco\.live/.test(link) || /loco\.com/.test(link)) return 'loco';
+      return '';
+    }
+
+    function gerarCampos(preenchido = []) {
+      const count = preenchido.length > 0 ? preenchido.length : parseInt(document.getElementById('chat-count').value);
+      const container = document.getElementById('links-container');
+      container.innerHTML = '';
+      document.getElementById('abrir').style.display = 'inline-block';
+
+      for (let i = 0; i < count; i++) {
+        const link = preenchido[i]?.link || '';
+        const plataforma = link ? detectarPlataforma(link) : '';
+
+        const div = document.createElement('div');
+        div.className = 'chat-group';
+
+        const icon = document.createElement('img');
+        icon.src = plataforma ? icones[plataforma] : icones.desconhecida;
+        icon.alt = plataforma || 'desconhecida';
+
+        const input = document.createElement('input');
+        input.type = 'url';
+        input.name = 'chat';
+        input.placeholder = plataforma ? `Link da live (${plataforma})` : 'Link da live a ser aberta';
+        input.value = link;
+        input.dataset.platform = plataforma;
+
+        input.addEventListener('input', () => {
+          const novaPlataforma = detectarPlataforma(input.value.trim());
+          input.dataset.platform = novaPlataforma;
+          icon.src = novaPlataforma ? icones[novaPlataforma] : icones.desconhecida;
+          icon.alt = novaPlataforma || 'desconhecida';
+          input.placeholder = novaPlataforma ? `Link da live (${novaPlataforma})` : 'Link da live a ser aberta';
+        });
+
+        div.appendChild(icon);
+        div.appendChild(input);
+        container.appendChild(div);
+      }
+    }
+
+    document.getElementById('form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const inputs = document.querySelectorAll('input[name="chat"]');
+      const chatData = Array.from(inputs).map(input => ({
+        link: input.value,
+        platform: input.dataset.platform
+      }));
+      window.electronAPI.startChats(chatData);
+    });
+
+    // Carregar dados anteriores se houver
+    window.electronAPI.onLoadSavedData((saved) => {
+      document.getElementById('chat-count').value = saved.length;
+      gerarCampos(saved);
+    });
+  </script>
+</body>
+</html>

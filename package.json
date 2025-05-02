@@ -1,0 +1,44 @@
+{
+  "name": "multi-chat-app",
+  "version": "1.2.0",
+  "description": "App para exibir múltiplos chats de lives",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "keywords": [],
+  "author": "Kelvin",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^29.4.6",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {},
+  "build": {
+    "appId": "com.kelvin.multi-chat-app",
+    "productName": "Multi Chat App",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!**/*.map",
+      "!node_modules/**/*",          
+      "7tv-extension/**/*"
+    ],
+    "asarUnpack": [
+      "7tv-extension/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Multi Chat App"
+}
+
+  }
+}
